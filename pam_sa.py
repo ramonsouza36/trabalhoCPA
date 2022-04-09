@@ -29,31 +29,31 @@ def adjacent(route, rnd):
   result[i] = result[j]; result[j] = tmp
   return result
 
-def solve(n_cities, rnd, max_iter, 
+def solve(nodes, rnd, max_iter, 
   start_temperature, alpha):
   # solve using simulated annealing
   curr_temperature = start_temperature
-  soln = np.arange(n_cities, dtype=np.int64)
-  rnd.shuffle(soln)
+  #soln = np.arange(n_cities, dtype=np.int64)
+  #rnd.shuffle(nodes)
   #retirar após pronto
   print("Initial guess: ")
-  print(soln)
+  #print(soln)
 
-  err = error(soln)
+  err = error(nodes)
   iteration = 0
   interval = (int)(max_iter / 10)
   while iteration < max_iter and err > 0.0:
-    adj_route = adjacent(soln, rnd)
+    adj_route = adjacent(nodes, rnd)
     adj_err = error(adj_route)
 
     if adj_err < err:  # better route so accept
-      soln = adj_route; err = adj_err
+      nodes = adj_route; err = adj_err
     else:          # adjacent is worse
       accept_p = \
         np.exp((err - adj_err) / curr_temperature)
       p = rnd.random()
       if p < accept_p:  # accept anyway
-        soln = adj_route; err = adj_err 
+        nodes = adj_route; err = adj_err 
       # else don't accept
 
     if iteration % interval == 0:
@@ -67,26 +67,32 @@ def solve(n_cities, rnd, max_iter,
       curr_temperature *= alpha
     iteration += 1
 
-  return soln       
+  return nodes       
 
 def main():
   print("\nBegin TSP simulated annealing demo ")
   #conteudo = mmread('Trefethen_200.mtx')
-  conteudo = open('Trefethen_200.mtx','r')
+  conteudo = open('Trefethen_500.mtx','r')
   #print(list(conteudo))
   nodes = []
+  cont = 0
   for linha in conteudo.readlines():
-    if "%" not in linha: 
-        teste = linha.split(' ')
-        x = int(teste[0])
-        y = int(teste[1])
-        nodes.append(x)
-        nodes.append(y)
+    if "%" not in linha:
+        if "500 500" not in linha:   
+          teste = linha.split(' ')
+          x = int(teste[0])
+          y = int(teste[1])
+          if x > y:
+                cont+= x-y
+          else: 
+            cont+=y-x 
+          nodes.append(x)
+          nodes.append(y)
   print(nodes)
-  num_cities = 200
+  num_cities = 500
   print("\nSetting num_cities = %d " % num_cities)
   rnd = np.random.RandomState(4) 
-  max_iter = 2500
+  max_iter = 200000
   start_temperature = 10000.0
   alpha = 0.99
 
@@ -94,16 +100,10 @@ def main():
   print("max_iter = %d " % max_iter)
   print("start_temperature = %0.1f " \
     % start_temperature)
-  print("alpha = %0.2f " % alpha)
-  cont = 0 
-  for i in nodes:
-        if nodes[i] < nodes[i+1]:
-          cont+= (nodes[i+1] - nodes[i])
-        else:
-          cont+= (nodes[i] - nodes[i+1])
+  print("alpha = %0.2f " % alpha) 
   print("Soma inicial: ",cont)
   print("\nStarting solve() ")
-  soln = solve(num_cities, rnd, max_iter, 
+  soln = solve(nodes, rnd, max_iter, 
     start_temperature, alpha)
   print("Finished solve() ")
 
