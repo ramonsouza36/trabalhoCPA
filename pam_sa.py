@@ -1,8 +1,5 @@
-# tsp_annealing.py
-# traveling salesman problem 
-# using classical simulated annealing
-# Python 3.7.6 (Anaconda3 2020.02)
-from scipy.io import mmread
+# Problema do arranjo minimo 
+# usando simulated annealing
 import numpy as np
 
 def total_dist(route):
@@ -29,16 +26,10 @@ def adjacent(route, rnd):
   result[i] = result[j]; result[j] = tmp
   return result
 
-def solve(nodes, rnd, max_iter, 
+def simulated_annealing(nodes, rnd, max_iter, 
   start_temperature, alpha):
   # solve using simulated annealing
   curr_temperature = start_temperature
-  #soln = np.arange(n_cities, dtype=np.int64)
-  #rnd.shuffle(nodes)
-  #retirar após pronto
-  print("Initial guess: ")
-  #print(soln)
-
   err = error(nodes)
   iteration = 0
   interval = (int)(max_iter / 10)
@@ -57,8 +48,7 @@ def solve(nodes, rnd, max_iter,
       # else don't accept
 
     if iteration % interval == 0:
-      print("iter = %6d | curr error = %7.2f | \
-      temperature = %10.4f " % \
+      print("iter = %6d" % \
       (iteration, err, curr_temperature))
 
     if curr_temperature < 0.00001:
@@ -70,15 +60,22 @@ def solve(nodes, rnd, max_iter,
   return nodes       
 
 def main():
-  print("\nBegin TSP simulated annealing demo ")
-  #conteudo = mmread('Trefethen_200.mtx')
-  conteudo = open('Trefethen_500.mtx','r')
-  #print(list(conteudo))
+  filename = 'nos4.mtx'
+  header = "100 100"
+  #filename = 'Trefethen_200.mtx'
+  #header = "200 200"
+  #filename = 'Trefethen_500.mtx'
+  #header = "500 500"
+  #filename = 'sherman1.mtx'
+  #header = "1000 1000"
+  #filename = 'olm2000.mtx'
+  #header = "2000 2000"    
+  conteudo = open(filename,'r')
   nodes = []
   cont = 0
   for linha in conteudo.readlines():
     if "%" not in linha:
-        if "500 500" not in linha:   
+        if header not in linha:   
           teste = linha.split(' ')
           x = int(teste[0])
           y = int(teste[1])
@@ -88,13 +85,11 @@ def main():
             cont+=y-x 
           nodes.append(x)
           nodes.append(y)
-  print(nodes)
-  num_cities = 500
-  print("\nSetting num_cities = %d " % num_cities)
   rnd = np.random.RandomState(4) 
-  max_iter = 200000
+  max_iter = 300000
   start_temperature = 10000.0
-  alpha = 0.99
+  alpha = 0.95
+  #alpha = 0.99
 
   print("\nSettings: ")
   print("max_iter = %d " % max_iter)
@@ -102,17 +97,12 @@ def main():
     % start_temperature)
   print("alpha = %0.2f " % alpha) 
   print("Soma inicial: ",cont)
-  print("\nStarting solve() ")
-  soln = solve(nodes, rnd, max_iter, 
+  soln = simulated_annealing(nodes, rnd, max_iter, 
     start_temperature, alpha)
   print("Finished solve() ")
 
-  print("\nBest solution found: ")
-  print(soln)
   dist = total_dist(soln)
-  print("\nTotal distance = %0.1f " % dist)
-
-  print("\nEnd demo ")
-
+  print("\nMelhor soma encontrada = %0.1f " % dist)
+  
 if __name__ == "__main__":
   main()
